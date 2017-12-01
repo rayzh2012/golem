@@ -35,6 +35,7 @@ from golem.model import Database
 from golem.monitor.model.nodemetadatamodel import NodeMetadataModel
 from golem.monitor.monitor import SystemMonitor
 from golem.monitorconfig import MONITOR_CONFIG
+from golem.network import history
 from golem.network.hyperdrive.daemon_manager import HyperdriveDaemonManager
 from golem.network.p2p.node import Node
 from golem.network.p2p.p2pservice import P2PService
@@ -141,7 +142,8 @@ class Client(HardwarePresetsMixin):
         self._services = [
             NetworkConnectionPublisherService(
                 self,
-                int(self.config_desc.network_check_interval))
+                int(self.config_desc.network_check_interval)),
+            history.install_service()
         ]
 
         clean_resources_older_than = \
@@ -245,6 +247,7 @@ class Client(HardwarePresetsMixin):
     @report_calls(Component.client, 'stop', stage=Stage.post)
     def stop(self):
         self.stop_network()
+
         for service in self._services:
             if service.running:
                 service.stop()
