@@ -302,6 +302,7 @@ class PaymentProcessor(Service):
 
     def monitor_progress(self):
         confirmed = []
+        current_block = self.__client.get_block_number()
         for h, payments in self._inprogress.items():
             hstr = '0x' + encode_hex(h)
             log.info("Checking {:.6} tx [{}]".format(hstr, len(payments)))
@@ -313,7 +314,7 @@ class PaymentProcessor(Service):
                         "block hash length should be 64, but is: {}".format(
                             len(block_hash)))
                 block_number = receipt['blockNumber']
-                if block_number < self.REQUIRED_CONFIRMATIONS:
+                if current_block - block_number < self.REQUIRED_CONFIRMATIONS:
                     continue
                 gas_used = receipt['gasUsed']
                 total_fee = gas_used * self.GAS_PRICE
