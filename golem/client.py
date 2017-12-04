@@ -35,6 +35,7 @@ from golem.model import Database
 from golem.monitor.model.nodemetadatamodel import NodeMetadataModel
 from golem.monitor.monitor import SystemMonitor
 from golem.monitorconfig import MONITOR_CONFIG
+from golem.network.concent.client import ConcentClientService
 from golem.network.history import MessageHistoryService
 from golem.network.hyperdrive.daemon_manager import HyperdriveDaemonManager
 from golem.network.p2p.node import Node
@@ -134,6 +135,7 @@ class Client(HardwarePresetsMixin):
 
         self.p2pservice = None
         self.diag_service = None
+        self.concent_service = ConcentClientService(enabled=False)
 
         self.task_server = None
 
@@ -232,6 +234,8 @@ class Client(HardwarePresetsMixin):
     @report_calls(Component.client, 'start', stage=Stage.pre)
     def start(self):
         self.environments_manager.load_config(self.datadir)
+        self.concent_service.start()
+
         if self.use_monitor and not self.monitor:
             self.init_monitor()
         try:
@@ -251,6 +255,8 @@ class Client(HardwarePresetsMixin):
         for service in self._services:
             if service.running:
                 service.stop()
+        if self.concent_service:
+            self.concent_service.stop()
         if self.task_server:
             self.task_server.task_computer.quit()
         if self.use_monitor and self.monitor:
