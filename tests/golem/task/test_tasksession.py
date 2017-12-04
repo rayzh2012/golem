@@ -496,7 +496,8 @@ class TestTaskSession(LogTestCase, testutils.TempDirFixture,
         # Pending
         msg = message.SubtaskPayment(
             subtask_id=subtask_id,
-            reward=reward
+            reward=reward,
+            raw=b''
         )
 
         self.task_session.interpret(msg)
@@ -638,7 +639,7 @@ class TestCreatePackage(unittest.TestCase):
         res.subtask_id = subtask_id
         ts.task_server.get_waiting_task_result.return_value = res
 
-        msg = message.GetTaskResult(subtask_id=subtask_id)
+        msg = message.GetTaskResult(subtask_id=subtask_id, raw=b'')
 
         self.subtask_id = subtask_id
         self.ts = ts
