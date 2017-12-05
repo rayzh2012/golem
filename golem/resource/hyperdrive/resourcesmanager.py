@@ -1,6 +1,6 @@
 import logging
 import os
-from collections import Collection
+from collections import Iterable, Sized
 
 from golem.core.async import AsyncRequest, async_run
 from golem.core.fileshelper import common_dir
@@ -10,6 +10,10 @@ from golem.resource.hyperdrive.peermanager import HyperdrivePeerManager
 from golem.resource.hyperdrive.resource import Resource, ResourceStorage
 
 logger = logging.getLogger(__name__)
+
+
+def is_collection(obj):
+    return isinstance(obj, Iterable) and isinstance(obj, Sized)
 
 
 class HyperdriveResourceManager(ClientHandler):
@@ -38,10 +42,10 @@ class HyperdriveResourceManager(ClientHandler):
 
     @staticmethod
     def from_wire(serialized):
-        iterator = filter(lambda x: isinstance(x, Collection) and len(x) > 1,
-                          serialized)
+        iterator = filter(lambda x: is_collection(x)
+                          and len(x) > 1, serialized)
         results = [Resource.deserialize(entry) for entry in iterator
-                   if isinstance(entry, Collection) and len(entry) > 1]
+                   if is_collection(entry) and len(entry) > 1]
 
         if len(results) != len(serialized):
             logger.debug("Errors occurred while deserializing %r", serialized)
